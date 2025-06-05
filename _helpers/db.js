@@ -12,10 +12,10 @@ async function initialize() {
     const user = process.env.MYSQLUSER;
     const password = process.env.MYSQLPASSWORD;
     const database = process.env.MYSQLDATABASE;
+    const dbUrl = new URL(process.env.MYSQL_PUBLIC_URL);
 
     // Create DB if not exists (optional, remove if managed externally)
     const connection = await mysql.createConnection({ host, port, user, password });
-    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\`;`);
     await connection.end();
 
     // Connect with Sequelize
