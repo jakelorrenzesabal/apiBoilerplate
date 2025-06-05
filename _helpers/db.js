@@ -8,7 +8,7 @@ module.exports = db = {};
 initialize();
 
 async function initialize() {
-    const dbUrl = new URL(process.env.MYSQL_PUBLIC_URL);
+    const dbUrl = new URL(process.env.MYSQL_URL);
     const host = dbUrl.hostname;
     const port = dbUrl.port;
     const user = dbUrl.username;

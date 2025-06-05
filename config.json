@@ -2,9 +2,9 @@
   "database": {
       "host": "localhost",
       "port": 3306,
-      "user": "root",
+      "user": "root",   
       "password": "root",
-      "database": "api_backend_boilerplate"
+      "database": "mysql://root:GvNxGrBlKgNIjrcVpyCHIYQKXPGHYhVr@centerbeam.proxy.rlwy.net:17340/railway"
   },
   "secret": "jakegwapo123*", 
   "emailFrom": "info@node-mysql-signup-verification-api.com",
