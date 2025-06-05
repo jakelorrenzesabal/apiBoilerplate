@@ -1,29 +1,60 @@
+require('dotenv').config();
 const mysql = require('mysql2/promise');
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
+const { URL } = require('url');
 
 module.exports = db = {};
 
 initialize();
+
 async function initialize() {
-    // Load credentials from environment variables
-    const host = process.env.MYSQLHOST;
-    const port = process.env.MYSQLPORT || 3306;
-    const user = process.env.MYSQLUSER;
-    const password = process.env.MYSQLPASSWORD;
-    const database = process.env.MYSQLDATABASE;
-    const dbUrl = new URL(process.env.MYSQL_PUBLIC_URL);
+    // Determine if running locally or in production
+    const isLocal = process.env.NODE_ENV !== 'production' && process.env.MYSQL_PUBLIC_URL;
 
-    // Create DB if not exists (optional, remove if managed externally)
-    const connection = await mysql.createConnection({ host, port, user, password });
-    await connection.end();
+    let host, port, user, password, database;
 
-    // Connect with Sequelize
+    if (isLocal) {
+        // Parse the MYSQL_PUBLIC_URL
+        const dbUrl = new URL(process.env.MYSQL_PUBLIC_URL);
+        host = dbUrl.hostname;
+        port = dbUrl.port;
+        user = dbUrl.username;
+        password = dbUrl.password;
+        database = dbUrl.pathname.replace('/', '');
+        console.log('🧪 Using MYSQL_PUBLIC_URL for local dev');
+    } else {
+        // Use internal Railway variables
+        host = process.env.MYSQLHOST;
+        port = process.env.MYSQLPORT || 3306;
+        user = process.env.MYSQLUSER;
+        password = process.env.MYSQLPASSWORD;
+        database = process.env.MYSQLDATABASE;
+        console.log('🚀 Using internal Railway MySQL connection');
+    }
+
+    // Test raw MySQL connection
+    try {
+        const connection = await mysql.createConnection({ host, port, user, password });
+        await connection.end();
+        console.log('✅ Raw MySQL connection successful');
+    } catch (err) {
+        console.error('❌ Raw MySQL connection failed:', err.message);
+    }
+
+    // Set up Sequelize
     const sequelize = new Sequelize(database, user, password, {
         host,
+        port,
         dialect: 'mysql',
         logging: false,
     });
+
+    try {
+        await sequelize.authenticate();
+        console.log('✅ Sequelize connected to MySQL');
+    } catch (err) {
+        console.error('❌ Sequelize connection failed:', err.message);
+    }
 
     // Initialize models
     db.Preferences = require('../models/preferences.model')(sequelize);  
